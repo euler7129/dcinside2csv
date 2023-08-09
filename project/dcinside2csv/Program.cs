@@ -1,6 +1,9 @@
-﻿using AngleSharp.Html.Parser;
+﻿using AngleSharp.Dom;
+using AngleSharp.Html.Dom;
+using AngleSharp.Html.Parser;
 using AngleSharp.XPath;
 using CsvHelper;
+using dcinside2csv.Model;
 using System.Globalization;
 
 ConsoleApp.Run<MyCommands>(args);
@@ -22,12 +25,12 @@ public class MyCommands : ConsoleAppBase
 
 	private void dcinside2csv(string inputDirPath, string outputDirPath)
 	{
+		List<GalleryPost> posts = new List<GalleryPost>();
 		// Get all HTML files in the input directory.
 		var htmlFiles = Directory.GetFiles(inputDirPath, "*.html", SearchOption.AllDirectories);
 		Console.WriteLine($"Found {htmlFiles.Length} HTML files.");
 		// Using AngleSharp to parse HTML files.
 		var parser = new HtmlParser();
-		// Using CsvHelper to write CSV files.
 		foreach ( var htmlFile in htmlFiles )
 		{
 			Console.WriteLine($"Parsing {htmlFile}...");
@@ -47,14 +50,30 @@ public class MyCommands : ConsoleAppBase
 
 			// Save each div element's InnerHtml to a text file
 			int index = 0;
+			List<IHtmlElement> galleryContents = new List<IHtmlElement>();
 			foreach ( var div in divs )
 			{
+				galleryContents.Add(div);
 				var divHtml = div.InnerHtml;
 				var divHtmlFilePath = Path.Combine(outputDirPath, $"{div.Id}{index++}.html");
 				File.WriteAllText(divHtmlFilePath, divHtml);
 			}
 
+			var commentDivs = document.QuerySelectorAll("div.cmt_info");
+
+			// Save to GalleryPost object
+			var galleryPost = new GalleryPost
+			{
+				Category = category,
+				Subject = subject,
+				Author = author,
+				RawContents = galleryContents,
+				RawComments = commentDivs.ToList()
+			};
+			posts.Add(galleryPost);
+
 			break;
 		}
+		var a = 1;
 	}
 }
