@@ -1,31 +1,122 @@
 ﻿using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
+using SkiaSharp;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace dcinside2csv.Model
 {
 	public class GalleryPost
 	{
+		private GalleryPost() { }
+		public GalleryPost(string blogHome, int postId, string imageDirPath)
+		{
+			BlogHome = blogHome; // "https://example.com/wp/"
+			PostId = postId;
+			ImageDirPath = imageDirPath;
+			// Create directory if not exists
+			if ( !Directory.Exists(imageDirPath) )
+			{
+				Directory.CreateDirectory(imageDirPath);
+			}
+		}
+
+		public string? BlogHome { get; }
+		public int PostId { get; }
+		public string? ImageDirPath { get; set; }
 		public string? Category { get; set; }
 		public string? Subject { get; set; }
 		public string? Author { get; set; }
+		public string? Date { get; set; }
 		public List<IHtmlElement>? RawContents { get; set; }
 		public string Contents
 		{
 			get
 			{
-				string result = "";
+				var stringBuilder = new StringBuilder();
 
+				int imgIndex = 1;
 				// Make string from RawContents
-				foreach ( var rawContent in RawContents )
+				foreach (var rawContent in RawContents)
 				{
-					result += rawContent.InnerHtml;
+					if (rawContent.Children.Length == 1)
+					{// Maybe image block
+						var childNode = rawContent.Children[0];
+						// if childNode class has "imgwrap"...
+						if (childNode.ClassList.Contains("imgwrap"))
+						{
+							// Save image from base64 data
+							var imgNode = childNode.Children[0];
+							var dataSource = imgNode.GetAttribute("src");
+							string patern = @"(data:image\/.*);base64,(.*)";
+							var match = Regex.Match(dataSource, patern);
+							var dataType = match.Groups[1].Value;
+							var base64data = match.Groups[2].Value;
+							// Decode base64data and save into file
+							var imageBytes = Convert.FromBase64String(base64data);
+							using SKBitmap bitmap = SKBitmap.Decode(imageBytes);
+							using SKImage image = SKImage.FromBitmap(bitmap);
+							var imageFilenameStem = $"{PostId}-{imgIndex}";
+							var imageFilePath = Path.Combine(ImageDirPath, imageFilenameStem);
+							switch (dataType)
+							{
+								case "data:image/png":
+									{
+										using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+										File.WriteAllBytes($"{imageFilePath}.png", data.ToArray());
+									}
+									break;
+								case "data:image/jpeg":
+									{
+										using SKData data = image.Encode(SKEncodedImageFormat.Jpeg, 100);
+										File.WriteAllBytes($"{imageFilePath}.jpg", data.ToArray());
+									}
+									break;
+								case "data:image/gif":
+									{
+										using SKData data = image.Encode(SKEncodedImageFormat.Gif, 100);
+										File.WriteAllBytes($"{imageFilePath}.gif", data.ToArray());
+									}
+									break;
+								case "data:image/bmp":
+									{
+										using SKData data = image.Encode(SKEncodedImageFormat.Bmp, 100);
+										File.WriteAllBytes($"{imageFilePath}.bmp", data.ToArray());
+									}
+									break;
+								case "data:image/webp":
+									{
+										using SKData data = image.Encode(SKEncodedImageFormat.Webp, 100);
+										File.WriteAllBytes($"{imageFilePath}.webp", data.ToArray());
+									}
+									break;
+								default:
+									Console.WriteLine($"Unsupported image type: {dataType}");
+									break;
+							}
+
+
+							// Create WXR image block
+							stringBuilder.AppendLine($"<!-- wp:image {{\"id\":{imgIndex},\"sizeSlug\":\"full\",\"linkDestination\":\"none\"}} -->");
+							stringBuilder.AppendLine($"<figure class=\"wp-block-image size-full\"><img src=\"{BlogHome}wp-content/uploads/2023/08/03-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
+							stringBuilder.AppendLine("<!-- /wp:image -->");
+							imgIndex++;
+						}
+					}
+					else
+					{
+						stringBuilder.AppendLine("<!-- wp:paragraph -->");
+						stringBuilder.AppendLine(rawContent.InnerHtml);
+						stringBuilder.AppendLine("<!-- /wp:paragraph -->");
+					}
 				}
 
-				return result;
+				return stringBuilder.ToString();
 			}
 		}
 		public List<IElement>? RawComments { get; set; }
-		public List<GalleryComment> Comments { 
+		public List<GalleryComment> Comments
+		{
 			get
 			{
 				var result = new List<GalleryComment>();
@@ -45,7 +136,7 @@ namespace dcinside2csv.Model
 						Content = content,
 						Date = date
 					};
-					result.Add( comment );
+					result.Add(comment);
 				}
 				return result;
 			}
