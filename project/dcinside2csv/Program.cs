@@ -4,6 +4,7 @@ using AngleSharp.Html.Parser;
 using AngleSharp.XPath;
 using CsvHelper;
 using dcinside2csv.Model;
+using dcinside2csv.Util;
 using System;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -73,6 +74,7 @@ public class MyCommands : ConsoleAppBase
 				Category = category,
 				Subject = subject,
 				Author = author,
+				Date = date,
 				RawContents = galleryContents,
 				RawComments = commentDivs.ToList()
 			};
@@ -87,7 +89,46 @@ public class MyCommands : ConsoleAppBase
 
 	private void GenerateCSV(string inputDirPath, string outputDirPath, List<GalleryPost> posts)
 	{
-		throw new NotImplementedException();
+		// 1. Generate CSV file for posts (input.csv)
+		var inputCsvPath = Path.Combine(outputDirPath, "input.csv");
+		var galleryPost2Csv = new GalleryPost2Csv();
+		foreach (var post in posts)
+		{
+			var csvPost = new CsvPost
+			{
+				title = post.Subject,
+				link = post.BlogHome,
+				pubDate = toPubDate(post.Date), // Should convert
+				dc_creator = post.Author,
+				content_encoded = $"<![CDATA[{post.Contents}]]>",
+				wp_post_id = post.PostId.ToString(),
+				wp_post_date = toWpDate(post.Date),
+				category = post.Category,
+				category_nice = post.Category,
+				comment_status = "closed",
+				ping_status = "closed"
+			};
+			galleryPost2Csv.Add(csvPost);
+		}
+		galleryPost2Csv.Save(Path.Combine(outputDirPath, "result"));
+	}
+
+	private string toWpDate(string date)
+	{
+		// 2023.05.25 17:23:51
+		var dateTime = DateTime.ParseExact(date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+		// 2022-08-08 20:48
+		return dateTime.ToString("yyyy-MM-dd HH:mm",CultureInfo.InvariantCulture);
+	}
+
+	private string toPubDate(string date)
+	{
+		// 2023.05.25 17:23:51
+		var dateTime = DateTime.ParseExact(date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+		// Tue, 08 Aug 2023 01:55:45 +0000
+		// ddd should be English day of the week
+		return dateTime.ToString("ddd, dd MMM yyyy HH:mm:ss +0000",
+			CultureInfo.CreateSpecificCulture("en-US"));
 	}
 
 	private int getPostId(IHtmlDocument document, string? date)
