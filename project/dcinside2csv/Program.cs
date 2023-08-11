@@ -92,10 +92,12 @@ public class MyCommands : ConsoleAppBase
 		// 1. Generate CSV file for posts (input.csv)
 		var inputCsvPath = Path.Combine(outputDirPath, "input.csv");
 		var galleryPost2Csv = new GalleryPost2Csv();
+		var index = 1;
 		foreach (var post in posts)
 		{
 			var csvPost = new CsvPost
 			{
+				uniqueId = post.PostId.ToString(),
 				title = post.Subject,
 				link = post.BlogHome,
 				pubDate = toPubDate(post.Date), // Should convert

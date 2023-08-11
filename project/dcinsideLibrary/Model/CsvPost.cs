@@ -5,7 +5,9 @@ namespace dcinsideLibrary.Model
 {
 	public class CsvPost
 	{
-		// title,link,pubDate,dc:creator,content:encoded,wp:post_id,wp:post_date,category,category_nice,comment_status,ping_status
+		// uniqueId,title,link,pubDate,dc:creator,content:encoded,wp:post_id,wp:post_date,category,category_nice,comment_status,ping_status
+		[Name("uniqueId")]
+		public string uniqueId { get; set; }
 		[Name("title")]
 		public string title { get; set; }
 		[Name("link")]
@@ -33,6 +35,8 @@ namespace dcinsideLibrary.Model
 		public override string ToString()
 		{
 			var sb = new StringBuilder();
+			sb.Append(uniqueId);
+			sb.Append(",");
 			sb.Append(title);
 			sb.Append(",");
 			sb.Append(link);

@@ -23,7 +23,7 @@ namespace dcinsideLibrary.Model
 		public string Approved { get; set; }
 		[Name("type")]
 		public string Type { get; set; }
-		[Name("parent")]
+		[Name("parent_id")]
 		public string Parent { get; set; }
 		[Name("user_id")]
 		public string UserId { get; set; }

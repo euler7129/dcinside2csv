@@ -2,6 +2,7 @@
 using AngleSharp.Html.Dom;
 using AngleSharp.Text;
 using SkiaSharp;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
@@ -18,7 +19,7 @@ namespace dcinsideLibrary.Model
 			PostId = postId;
 			ImageDirPath = imageDirPath;
 			// Create directory if not exists
-			if ( !Directory.Exists(imageDirPath) )
+			if (!Directory.Exists(imageDirPath))
 			{
 				Directory.CreateDirectory(imageDirPath);
 			}
@@ -67,7 +68,7 @@ namespace dcinsideLibrary.Model
 					{
 						if (rawContent.ClassList.Contains("imgwrap"))
 						{// Image block
-							// Save image from base64 data
+						 // Save image from base64 data
 							var imgNode = rawContent.Children[0];
 
 							SKBitmap bitmap;
@@ -76,7 +77,7 @@ namespace dcinsideLibrary.Model
 						}
 						else
 						{// paragraph block
-							// Skip if element is empty
+						 // Skip if element is empty
 							if (rawContent.InnerHtml == "")
 							{
 								continue;
@@ -215,6 +216,19 @@ namespace dcinsideLibrary.Model
 
 						// Get date inside rawComment. Query is "span.date_time"
 						string date = rawComment.QuerySelector("span.date_time")?.InnerHtml ?? "date";
+						if (date.Equals("date"))
+						{
+							// 03.29 09:12:16
+							// Initialize with default date by referring post date
+							if (Date != null)
+							{
+								date = postDateToCommentDate(Date);
+							}
+							else
+							{
+								date = "01.01 00:00:00";
+							}
+						}
 
 						var comment = new GalleryComment
 						{
@@ -250,6 +264,19 @@ namespace dcinsideLibrary.Model
 
 						// Get date inside rawComment. Query is "span.date_time"
 						string date = rawComment.QuerySelector("span.date_time")?.InnerHtml ?? "date";
+						if (date.Equals("date"))
+						{
+							// 03.29 09:12:16
+							// Initialize with default date by referring post date
+							if (Date != null)
+							{
+								date = postDateToCommentDate(Date);
+							}
+							else
+							{
+								date = "01.01 00:00:00";
+							}
+						}
 						// Get parent comment id inside rawComment. It's inside attribute "id" and it's value is "reply_list_XXXXXX"
 						int parentCommentId = rawComment.ParentElement.GetAttribute("id").Replace("reply_list_", "").ToInteger(0);
 
@@ -270,5 +297,13 @@ namespace dcinsideLibrary.Model
 			}
 		}
 
+		private string postDateToCommentDate(string? date)
+		{
+			// 2023.05.25 17:23:51
+			var dateTime = DateTime.ParseExact(date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+			// 05.25 17:23:51
+			return dateTime.ToString("MM.dd HH:mm:ss",
+				CultureInfo.CreateSpecificCulture("en-US"));
+		}
 	}
 }
