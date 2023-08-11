@@ -41,90 +41,65 @@ namespace dcinside2csv.Model
 				// Make string from RawContents
 				foreach (var rawContent in RawContents)
 				{
+					// Maybe image block
 					if (rawContent.Children.Length == 1)
-					{// Maybe image block
+					{
 						var childNode = rawContent.Children[0];
+						// Skip <br> tag
+						if (childNode.TagName.Equals("BR"))
+						{
+							continue;
+						}
+
 						// if childNode class has "imgwrap"...
 						if (childNode.ClassList.Contains("imgwrap"))
 						{
 							// Save image from base64 data
 							var imgNode = childNode.Children[0];
-							var dataSource = imgNode.GetAttribute("src");
-							string patern = @"(data:image\/.*);base64,(.*)";
-							var match = Regex.Match(dataSource, patern);
-							var dataType = match.Groups[1].Value;
-							var base64data = match.Groups[2].Value;
-							// Decode base64data and save into file
-							var imageBytes = Convert.FromBase64String(base64data);
-							using SKBitmap bitmap = SKBitmap.Decode(imageBytes);
-							using SKImage image = SKImage.FromBitmap(bitmap);
-							var imageFilenameStem = $"{PostId}-{imgIndex}";
-							var imageFilePath = Path.Combine(ImageDirPath, imageFilenameStem);
-							switch (dataType)
-							{
-								case "data:image/png":
-									{
-										using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
-										File.WriteAllBytes($"{imageFilePath}.png", data.ToArray());
-									}
-									break;
-								case "data:image/jpeg":
-									{
-										using SKData data = image.Encode(SKEncodedImageFormat.Jpeg, 100);
-										File.WriteAllBytes($"{imageFilePath}.jpg", data.ToArray());
-									}
-									break;
-								case "data:image/gif":
-									{
-										using SKData data = image.Encode(SKEncodedImageFormat.Gif, 100);
-										File.WriteAllBytes($"{imageFilePath}.gif", data.ToArray());
-									}
-									break;
-								case "data:image/bmp":
-									{
-										using SKData data = image.Encode(SKEncodedImageFormat.Bmp, 100);
-										File.WriteAllBytes($"{imageFilePath}.bmp", data.ToArray());
-									}
-									break;
-								case "data:image/webp":
-									{
-										using SKData data = image.Encode(SKEncodedImageFormat.Webp, 100);
-										File.WriteAllBytes($"{imageFilePath}.webp", data.ToArray());
-									}
-									break;
-								default:
-									Console.WriteLine($"Unsupported image type: {dataType}");
-									break;
-							}
 
-
-							// Create WXR image block
-							stringBuilder.Append($"<!-- wp:image {{\"id\":{imgIndex},\"sizeSlug\":\"full\",\"linkDestination\":\"none\"}} -->");
-							stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{BlogHome}wp-content/uploads/2023/08/03-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
-							stringBuilder.Append("<!-- /wp:image -->");
-							imgIndex++;
+							SKBitmap bitmap;
+							SKImage image;
+							imgIndex = ProcessImageBlock(stringBuilder, imgIndex, imgNode, out bitmap, out image);
 						}
 					}
 					else
 					{
-						stringBuilder.Append("<!-- wp:paragraph -->");
-						// If element type is div, change it to p
-						if (rawContent.TagName == "DIV")
-						{
-							var pElement = rawContent.Owner!.CreateElement<IHtmlParagraphElement>();
-							foreach (var attribute in rawContent.Attributes)
-							{
-								pElement.SetAttribute(attribute.Name, attribute.Value);
-							}
-							pElement.InnerHtml = rawContent.InnerHtml;
-							//rawContent.Parent!.ReplaceChild(pElement, rawContent); // I think I don't have to replace it
-							stringBuilder.Append(pElement.OuterHtml);
+						if (rawContent.ClassList.Contains("imgwrap"))
+						{// Image block
+							// Save image from base64 data
+							var imgNode = rawContent.Children[0];
+
+							SKBitmap bitmap;
+							SKImage image;
+							imgIndex = ProcessImageBlock(stringBuilder, imgIndex, imgNode, out bitmap, out image);
 						}
 						else
-						{
-							stringBuilder.Append(rawContent.InnerHtml);
+						{// paragraph block
+							// Skip if element is empty
+							if (rawContent.InnerHtml == "")
+							{
+								continue;
+							}
+
+							stringBuilder.Append("<!-- wp:paragraph -->");
+							// If element type is div, change it to p
+							if (rawContent.TagName == "DIV")
+							{
+								var pElement = rawContent.Owner!.CreateElement<IHtmlParagraphElement>();
+								foreach (var attribute in rawContent.Attributes)
+								{
+									pElement.SetAttribute(attribute.Name, attribute.Value);
+								}
+								pElement.InnerHtml = rawContent.InnerHtml;
+								//rawContent.Parent!.ReplaceChild(pElement, rawContent); // I think I don't have to replace it
+								stringBuilder.Append(pElement.OuterHtml);
+							}
+							else
+							{
+								stringBuilder.Append(rawContent.OuterHtml);
+							}
+							stringBuilder.Append("<!-- /wp:paragraph -->");
 						}
-						stringBuilder.Append("<!-- /wp:paragraph -->");
 					}
 				}
 
@@ -134,9 +109,68 @@ namespace dcinside2csv.Model
 			}
 		}
 
+		private int ProcessImageBlock(StringBuilder stringBuilder, int imgIndex, IElement imgNode, out SKBitmap bitmap, out SKImage image)
+		{
+			var dataSource = imgNode.GetAttribute("src");
+			string patern = @"(data:image\/.*);base64,(.*)";
+			var match = Regex.Match(dataSource, patern);
+			var dataType = match.Groups[1].Value;
+			var base64data = match.Groups[2].Value;
+			// Decode base64data and save into file
+			var imageBytes = Convert.FromBase64String(base64data);
+			bitmap = SKBitmap.Decode(imageBytes);
+			image = SKImage.FromBitmap(bitmap);
+			var imageFilenameStem = $"{PostId}-{imgIndex}";
+			var imageFilePath = Path.Combine(ImageDirPath, imageFilenameStem);
+			switch (dataType)
+			{
+				case "data:image/png":
+					{
+						using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
+						File.WriteAllBytes($"{imageFilePath}.png", data.ToArray());
+					}
+					break;
+				case "data:image/jpeg":
+					{
+						using SKData data = image.Encode(SKEncodedImageFormat.Jpeg, 100);
+						File.WriteAllBytes($"{imageFilePath}.jpg", data.ToArray());
+					}
+					break;
+				case "data:image/gif":
+					{
+						using SKData data = image.Encode(SKEncodedImageFormat.Gif, 100);
+						File.WriteAllBytes($"{imageFilePath}.gif", data.ToArray());
+					}
+					break;
+				case "data:image/bmp":
+					{
+						using SKData data = image.Encode(SKEncodedImageFormat.Bmp, 100);
+						File.WriteAllBytes($"{imageFilePath}.bmp", data.ToArray());
+					}
+					break;
+				case "data:image/webp":
+					{
+						using SKData data = image.Encode(SKEncodedImageFormat.Webp, 100);
+						File.WriteAllBytes($"{imageFilePath}.webp", data.ToArray());
+					}
+					break;
+				default:
+					Console.WriteLine($"Unsupported image type: {dataType}");
+					break;
+			}
+
+
+			// Create WXR image block
+			stringBuilder.Append($"<!-- wp:image {{\"id\":{imgIndex},\"sizeSlug\":\"full\",\"linkDestination\":\"none\"}} -->");
+			stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{BlogHome}wp-content/uploads/2023/08/03-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
+			stringBuilder.Append("<!-- /wp:image -->");
+			imgIndex++;
+			return imgIndex;
+		}
+
 		private string minify(string v)
 		{
-			var minifier = new HtmlMinifier();
+			var minifier = new HtmlMinifier(new HtmlMinificationSettings { RemoveHtmlComments = false });
 			var minified = minifier.Minify(v);
 			return minified.MinifiedContent;
 		}

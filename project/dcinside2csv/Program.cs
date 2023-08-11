@@ -53,14 +53,14 @@ public class MyCommands : ConsoleAppBase
 			// Get write_div div element
 			var writeDiv = document.QuerySelector("div.write_div");
 			// Filter only HtmlDivElement elements in writeDiv
-			var divs = writeDiv.Children.Where(x => x is AngleSharp.Html.Dom.IHtmlDivElement).Cast<AngleSharp.Html.Dom.IHtmlDivElement>();
+			var blocks = writeDiv.Children.Where(x => x is IHtmlDivElement || x is IHtmlParagraphElement).Cast<AngleSharp.Html.Dom.IHtmlElement>();
 
 			// Save each div element's InnerHtml to a text file
 			int index = 0;
 			List<IHtmlElement> galleryContents = new List<IHtmlElement>();
-			foreach ( var div in divs )
+			foreach ( var block in blocks )
 			{
-				galleryContents.Add(div);
+				galleryContents.Add(block);
 				//var divHtml = div.InnerHtml;
 				//var divHtmlFilePath = Path.Combine(outputDirPath, $"{div.Id}{index++}.html");
 				//File.WriteAllText(divHtmlFilePath, divHtml);
