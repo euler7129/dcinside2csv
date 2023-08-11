@@ -1,12 +1,11 @@
-﻿using AngleSharp.Dom;
-using AngleSharp.Html.Dom;
+﻿using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using AngleSharp.XPath;
-using CsvHelper;
-using dcinside2csv.Model;
-using dcinside2csv.Util;
-using System;
+using dcinsideLibrary.Model;
+using dcinsideLibrary.Util;
 using System.Globalization;
+using System.IO.Hashing;
+using System.Text;
 using System.Text.RegularExpressions;
 
 ConsoleApp.Run<MyCommands>(args);
@@ -20,7 +19,7 @@ public class MyCommands : ConsoleAppBase
 	{// -i "D:\temp\dcinside\gallery" -o "D:\temp\dcinside\gallery_csv"
 		var arguments = Context.Arguments;
 		Console.WriteLine($"Executing with arguments: \"{string.Join(" ", arguments)}\"");
-		Console.WriteLine("dcinside2csv has been started.");
+		Console.WriteLine("dcinsideLibrary has been started.");
 
 		// Each HTML file will generate BlogPost, Comment, and Image objects.
 		dcinside2csv(inputDirPath, outputDirPath, "https://example.com/wp/");
@@ -66,7 +65,7 @@ public class MyCommands : ConsoleAppBase
 				//File.WriteAllText(divHtmlFilePath, divHtml);
 			}
 
-			var commentDivs = document.QuerySelectorAll("div.cmt_info");
+			var commentDivs = document.QuerySelectorAll("li.ub-content");
 
 			// Save to GalleryPost object
 			var galleryPost = new GalleryPost(blogHome, postId, imageDirPath)
@@ -79,8 +78,9 @@ public class MyCommands : ConsoleAppBase
 				RawComments = commentDivs.ToList()
 			};
 			posts.Add(galleryPost);
-			var htmlContents = galleryPost.Contents;
-			var cdataContents = $"<![CDATA[{htmlContents}]]>";
+			//var htmlContents = galleryPost.Contents;
+			//var cdataContents = $"<![CDATA[{htmlContents}]]>";
+			//var comments = galleryPost.Comments;
 
 			//break;
 		}
@@ -111,6 +111,35 @@ public class MyCommands : ConsoleAppBase
 			galleryPost2Csv.Add(csvPost);
 		}
 		galleryPost2Csv.Save(inputCsvPath);
+
+		// 2. Generate CSV file for comments (comments\postId.csv)
+		var commentsDirPath = Path.Combine(outputDirPath, "comments");
+		Directory.CreateDirectory(commentsDirPath);
+
+		foreach (var post in posts)
+		{
+			var galleryComment2Csv = new GalleryComment2Csv();
+			foreach(var comment in post.Comments)
+			{
+				var csvComment = new CsvComment
+				{
+					CommentId = comment.CommentId.ToString(),
+					Author = comment.Author,
+					AuthorEmail = $"{Convert.ToHexString(Crc32.Hash(Encoding.UTF8.GetBytes(comment.Author)))}@example.com",
+					AuthorUrl = $"http://example.com",
+					AuthorIp = "172.0.0.1",
+					Date = comment.Date,
+					Content = comment.Content,
+					Approved = "1",
+					Type = "",
+					Parent = comment.ParentCommentId == -1 ? "" : comment.ParentCommentId.ToString(),
+					UserId = "0",
+				};
+				galleryComment2Csv.Add(csvComment);
+			}
+			var csvPath = Path.Combine(commentsDirPath, $"{post.PostId}.csv");
+			galleryComment2Csv.Save(csvPath);
+		}
 	}
 
 	private string toWpDate(string date)

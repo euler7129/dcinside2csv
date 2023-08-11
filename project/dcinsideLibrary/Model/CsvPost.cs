@@ -1,7 +1,7 @@
 ﻿using CsvHelper.Configuration.Attributes;
 using System.Text;
 
-namespace dcinside2csv.Model
+namespace dcinsideLibrary.Model
 {
 	public class CsvPost
 	{

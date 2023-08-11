@@ -1,12 +1,13 @@
 ﻿using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
+using AngleSharp.Text;
 using SkiaSharp;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using WebMarkupMin.Core;
 
-namespace dcinside2csv.Model
+namespace dcinsideLibrary.Model
 {
 	public class GalleryPost
 	{
@@ -190,20 +191,80 @@ namespace dcinside2csv.Model
 				// Make GalleryComment from RawComments
 				foreach (var rawComment in RawComments)
 				{
-					// Get author inside rawComment. Query is "span.data-nick"
-					string author = rawComment.QuerySelector("span.contextmenu")?.InnerHtml ?? "author";
-					// Get content inside rawComment. Query is "p.usertxt"
-					string content = rawComment.QuerySelector("p.usertxt")?.InnerHtml ?? "content";
-					// Get date inside rawComment. Query is "span.date_time"
-					string date = rawComment.QuerySelector("span.date_time")?.InnerHtml ?? "date";
-
-					var comment = new GalleryComment
+					// general comment
+					if (rawComment.GetAttribute("id").Contains("comment"))
 					{
-						Author = author,
-						Content = content,
-						Date = date
-					};
-					result.Add(comment);
+						// Get author inside rawComment. Query is "span.data-nick"
+						string author = rawComment.QuerySelector("span.gall_writer")?.GetAttribute("data-nick") ?? "author";
+						if (author.Equals("댓글돌이")) continue;
+						// Get content inside rawComment. Query is "p.usertxt"
+						string content = rawComment.QuerySelector("p.usertxt")?.InnerHtml ?? "content";
+						int commentId = rawComment.QuerySelector("div.cmt_info").GetAttribute("data-no").ToInteger(0);
+						// if div class "comment_dccon"
+						if (content.Equals("content"))
+						{
+							if (rawComment.QuerySelector("div.comment_dccon") != null)
+							{
+								content = "디시콘";
+							}
+							if (rawComment.QuerySelector("p.del_reply") != null)
+							{
+								content = "(해당 댓글은 삭제되었습니다.)";
+							}
+						}
+
+						// Get date inside rawComment. Query is "span.date_time"
+						string date = rawComment.QuerySelector("span.date_time")?.InnerHtml ?? "date";
+
+						var comment = new GalleryComment
+						{
+							Author = author,
+							Content = content,
+							Date = date,
+							CommentId = commentId,
+							IsReply = false,
+							ParentCommentId = -1
+						};
+						result.Add(comment);
+
+					}
+					else if (rawComment.GetAttribute("id").Contains("reply")) // reply comment
+					{
+						string author = rawComment.QuerySelector("span.contextmenu")?.InnerHtml ?? "author";
+						if (author.Equals("댓글돌이")) continue;
+						// Get content inside rawComment. Query is "p.usertxt"
+						string content = rawComment.QuerySelector("p.usertxt")?.InnerHtml ?? "content";
+						int commentId = rawComment.QuerySelector("div.reply_info").GetAttribute("data-no").ToInteger(0);
+						// if div class "comment_dccon"
+						if (content.Equals("content"))
+						{
+							if (rawComment.QuerySelector("div.comment_dccon") != null)
+							{
+								content = "디시콘";
+							}
+							if (rawComment.QuerySelector("p.del_reply") != null)
+							{
+								content = "(해당 댓글은 삭제되었습니다.)";
+							}
+						}
+
+						// Get date inside rawComment. Query is "span.date_time"
+						string date = rawComment.QuerySelector("span.date_time")?.InnerHtml ?? "date";
+						// Get parent comment id inside rawComment. It's inside attribute "id" and it's value is "reply_list_XXXXXX"
+						int parentCommentId = rawComment.ParentElement.GetAttribute("id").Replace("reply_list_", "").ToInteger(0);
+
+						var comment = new GalleryComment
+						{
+							Author = author,
+							Content = content,
+							CommentId = commentId,
+							Date = date,
+							IsReply = true,
+							ParentCommentId = parentCommentId
+						};
+
+						result.Add(comment);
+					}
 				}
 				return result;
 			}

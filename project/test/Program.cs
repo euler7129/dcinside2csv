@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using CsvHelper;
-using dcinside2csv.Model;
+using dcinsideLibrary.Model;
 using System.Globalization;
 
 using var reader = new StreamReader("D:\\temp\\dcinside\\gallery_csv\\input.csv");

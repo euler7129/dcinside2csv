@@ -1,9 +1,9 @@
 ﻿using CsvHelper;
-using dcinside2csv.Model;
+using dcinsideLibrary.Model;
 using System.Globalization;
 using System.Text;
 
-namespace dcinside2csv.Util
+namespace dcinsideLibrary.Util
 {
 	public class GalleryPost2Csv
 	{
