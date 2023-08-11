@@ -234,7 +234,7 @@ namespace dcinsideLibrary.Model
 						{
 							Author = author,
 							Content = content,
-							Date = date,
+							Date = dcCommentDateToCommentDate(date),
 							CommentId = commentId,
 							IsReply = false,
 							ParentCommentId = -1
@@ -285,7 +285,7 @@ namespace dcinsideLibrary.Model
 							Author = author,
 							Content = content,
 							CommentId = commentId,
-							Date = date,
+							Date = dcCommentDateToCommentDate(date),
 							IsReply = true,
 							ParentCommentId = parentCommentId
 						};
@@ -304,6 +304,19 @@ namespace dcinsideLibrary.Model
 			// 05.25 17:23:51
 			return dateTime.ToString("MM.dd HH:mm:ss",
 				CultureInfo.CreateSpecificCulture("en-US"));
+		}
+
+		private string dcCommentDateToCommentDate(string? date)
+		{
+			// 2023.05.25 17:23:51
+			var dateTime = DateTime.ParseExact(date, "MM.dd HH:mm:ss", CultureInfo.InvariantCulture);
+			// 2023-03-29 04:02
+			var postDate = DateTime.ParseExact(Date, "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+			var postYear = postDate.Year;
+			// 05.25 17:23:51
+			var dateResult = dateTime.ToString("MM-dd HH:mm",
+				CultureInfo.CreateSpecificCulture("en-US"));
+			return $"{postYear}-{dateResult}";
 		}
 	}
 }
