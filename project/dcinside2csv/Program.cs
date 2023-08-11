@@ -84,10 +84,10 @@ public class MyCommands : ConsoleAppBase
 
 			//break;
 		}
-		GenerateCSV(inputDirPath, outputDirPath, posts);
+		GenerateCSV(outputDirPath, posts);
 	}
 
-	private void GenerateCSV(string inputDirPath, string outputDirPath, List<GalleryPost> posts)
+	private void GenerateCSV(string outputDirPath, List<GalleryPost> posts)
 	{
 		// 1. Generate CSV file for posts (input.csv)
 		var inputCsvPath = Path.Combine(outputDirPath, "input.csv");
