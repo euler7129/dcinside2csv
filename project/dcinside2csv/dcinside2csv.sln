@@ -3,7 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.33627.172
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dcinside2csv", "dcinside2csv.csproj", "{6E82826B-A1B2-405D-806E-0B8C11E2C85E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dcinside2csv", "dcinside2csv.csproj", "{6E82826B-A1B2-405D-806E-0B8C11E2C85E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "..\test\test.csproj", "{435D5179-B384-433D-BBF3-1514DB9FB361}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dcinsideLibrary", "..\dcinsideLibrary\dcinsideLibrary.csproj", "{7BF58527-FB7E-4688-8A80-E09459E0FF1E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{6E82826B-A1B2-405D-806E-0B8C11E2C85E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6E82826B-A1B2-405D-806E-0B8C11E2C85E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6E82826B-A1B2-405D-806E-0B8C11E2C85E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{435D5179-B384-433D-BBF3-1514DB9FB361}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{435D5179-B384-433D-BBF3-1514DB9FB361}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{435D5179-B384-433D-BBF3-1514DB9FB361}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{435D5179-B384-433D-BBF3-1514DB9FB361}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7BF58527-FB7E-4688-8A80-E09459E0FF1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7BF58527-FB7E-4688-8A80-E09459E0FF1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7BF58527-FB7E-4688-8A80-E09459E0FF1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7BF58527-FB7E-4688-8A80-E09459E0FF1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

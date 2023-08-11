@@ -1,4 +1,6 @@
-﻿using dcinside2csv.Model;
+﻿using CsvHelper;
+using dcinside2csv.Model;
+using System.Globalization;
 using System.Text;
 
 namespace dcinside2csv.Util
@@ -20,6 +22,14 @@ namespace dcinside2csv.Util
 		}
 
 		public bool Save(string filename)
+		{
+			using var writer = new StreamWriter($"{filename}.csv", false, Encoding.UTF8);
+			using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+			csv.WriteRecords(csvPosts);
+			return true;
+		}
+
+		public bool Save2(string filename)
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 			stringBuilder.AppendLine(fields);

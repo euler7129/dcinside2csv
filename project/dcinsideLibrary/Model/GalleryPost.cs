@@ -3,6 +3,8 @@ using AngleSharp.Html.Dom;
 using SkiaSharp;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
+using WebMarkupMin.Core;
 
 namespace dcinside2csv.Model
 {
@@ -97,23 +99,48 @@ namespace dcinside2csv.Model
 
 
 							// Create WXR image block
-							stringBuilder.AppendLine($"<!-- wp:image {{\"id\":{imgIndex},\"sizeSlug\":\"full\",\"linkDestination\":\"none\"}} -->");
-							stringBuilder.AppendLine($"<figure class=\"wp-block-image size-full\"><img src=\"{BlogHome}wp-content/uploads/2023/08/03-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
-							stringBuilder.AppendLine("<!-- /wp:image -->");
+							stringBuilder.Append($"<!-- wp:image {{\"id\":{imgIndex},\"sizeSlug\":\"full\",\"linkDestination\":\"none\"}} -->");
+							stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{BlogHome}wp-content/uploads/2023/08/03-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
+							stringBuilder.Append("<!-- /wp:image -->");
 							imgIndex++;
 						}
 					}
 					else
 					{
-						stringBuilder.AppendLine("<!-- wp:paragraph -->");
-						stringBuilder.AppendLine(rawContent.InnerHtml);
-						stringBuilder.AppendLine("<!-- /wp:paragraph -->");
+						stringBuilder.Append("<!-- wp:paragraph -->");
+						// If element type is div, change it to p
+						if (rawContent.TagName == "DIV")
+						{
+							var pElement = rawContent.Owner!.CreateElement<IHtmlParagraphElement>();
+							foreach (var attribute in rawContent.Attributes)
+							{
+								pElement.SetAttribute(attribute.Name, attribute.Value);
+							}
+							pElement.InnerHtml = rawContent.InnerHtml;
+							//rawContent.Parent!.ReplaceChild(pElement, rawContent); // I think I don't have to replace it
+							stringBuilder.Append(pElement.OuterHtml);
+						}
+						else
+						{
+							stringBuilder.Append(rawContent.InnerHtml);
+						}
+						stringBuilder.Append("<!-- /wp:paragraph -->");
 					}
 				}
 
-				return stringBuilder.ToString();
+				//stringBuilder.Replace("\r\n", "\"\r\n\"");
+				//stringBuilder.Replace("\n", "\"\n\"");
+				return minify(stringBuilder.ToString());
 			}
 		}
+
+		private string minify(string v)
+		{
+			var minifier = new HtmlMinifier();
+			var minified = minifier.Minify(v);
+			return minified.MinifiedContent;
+		}
+
 		public List<IElement>? RawComments { get; set; }
 		public List<GalleryComment> Comments
 		{
