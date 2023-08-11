@@ -16,8 +16,8 @@ public class MyCommands : ConsoleAppBase
 	[RootCommand]
 	public void RootCommand(
 		[Option("i", "Directory path containing input HTML files")] string inputDirPath,
-		[Option("p", "Directory path of the output data")] string outputDirPath)
-	{// -i "D:\temp\dcinside\gallery" -p "D:\temp\dcinside\gallery_csv"
+		[Option("o", "Directory path of the output data")] string outputDirPath)
+	{// -i "D:\temp\dcinside\gallery" -o "D:\temp\dcinside\gallery_csv"
 		var arguments = Context.Arguments;
 		Console.WriteLine($"Executing with arguments: \"{string.Join(" ", arguments)}\"");
 		Console.WriteLine("dcinside2csv has been started.");
