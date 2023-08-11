@@ -80,6 +80,12 @@ namespace dcinside2csv.Model
 							{
 								continue;
 							}
+							// Skip if child node is dcCon
+							if (rawContent.ChildElementCount > 0)
+							{
+								if (rawContent.Children[0].ClassList.Contains("written_dccon"))
+									continue;
+							}
 
 							stringBuilder.Append("<!-- wp:paragraph -->");
 							// If element type is div, change it to p
