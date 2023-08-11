@@ -15,17 +15,19 @@ public class MyCommands : ConsoleAppBase
 	[RootCommand]
 	public void RootCommand(
 		[Option("i", "Directory path containing input HTML files")] string inputDirPath,
-		[Option("o", "Directory path of the output data")] string outputDirPath)
+		[Option("o", "Directory path of the output data")] string outputDirPath,
+		[Option("h", "Url of blog home")] string blogHomeUrl, // "https://example.wordpress.com/"
+		[Option("f", "Url of file home")] string fileHomeUrl) // "https://example.files.wordpress.com/"
 	{// -i "D:\temp\dcinside\gallery" -o "D:\temp\dcinside\gallery_csv"
 		var arguments = Context.Arguments;
 		Console.WriteLine($"Executing with arguments: \"{string.Join(" ", arguments)}\"");
 		Console.WriteLine("dcinsideLibrary has been started.");
 
 		// Each HTML file will generate BlogPost, Comment, and Image objects.
-		dcinside2csv(inputDirPath, outputDirPath, "https://example.com/wp/");
+		dcinside2csv(inputDirPath, outputDirPath, blogHomeUrl, fileHomeUrl);
 	}
 
-	private void dcinside2csv(string inputDirPath, string outputDirPath, string blogHome)
+	private void dcinside2csv(string inputDirPath, string outputDirPath, string blogHomeUrl, string fileHomeUrl)
 	{
 		string imageDirPath = Path.Combine(outputDirPath, "images");
 
@@ -68,7 +70,7 @@ public class MyCommands : ConsoleAppBase
 			var commentDivs = document.QuerySelectorAll("li.ub-content");
 
 			// Save to GalleryPost object
-			var galleryPost = new GalleryPost(blogHome, postId, imageDirPath)
+			var galleryPost = new GalleryPost(blogHomeUrl, fileHomeUrl, postId, imageDirPath)
 			{
 				Category = category,
 				Subject = subject,
@@ -99,7 +101,7 @@ public class MyCommands : ConsoleAppBase
 			{
 				uniqueId = post.PostId.ToString(),
 				title = post.Subject,
-				link = post.BlogHome,
+				link = post.BlogHomeUrl,
 				pubDate = toPubDate(post.Date), // Should convert
 				dc_creator = post.Author,
 				content_encoded = $"<![CDATA[{post.Contents}]]>",

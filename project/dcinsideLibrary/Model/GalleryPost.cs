@@ -13,9 +13,10 @@ namespace dcinsideLibrary.Model
 	public class GalleryPost
 	{
 		private GalleryPost() { }
-		public GalleryPost(string blogHome, int postId, string imageDirPath)
+		public GalleryPost(string blogHomeUrl, string fileHomeUrl, int postId, string imageDirPath)
 		{
-			BlogHome = blogHome; // "https://example.com/wp/"
+			BlogHomeUrl = blogHomeUrl; // "https://example.wordpress.com/"
+			FileHomeUrl = fileHomeUrl; // "https://example.files.wordpress.com/"
 			PostId = postId;
 			ImageDirPath = imageDirPath;
 			// Create directory if not exists
@@ -25,7 +26,8 @@ namespace dcinsideLibrary.Model
 			}
 		}
 
-		public string? BlogHome { get; }
+		public string? BlogHomeUrl { get; }
+		public string? FileHomeUrl { get; }
 		public int PostId { get; }
 		public string? ImageDirPath { get; set; }
 		public string? Category { get; set; }
@@ -171,8 +173,9 @@ namespace dcinsideLibrary.Model
 			// Create WXR image block
 			var now = DateTime.Now;
 			stringBuilder.Append($"<!-- wp:image {{\"id\":{imgIndex},\"sizeSlug\":\"full\",\"linkDestination\":\"none\"}} -->");
-			// https://{BLOGNAME}.files.wordpress.com/2023/08/img-1-1.png
-			stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{BlogHome}/files/{now.Year}/{now.Month}/img-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
+			// https://{FileHomeUrl}/2023/08/img-1-1.png
+			var fileUrl = FileHomeUrl.Last().Equals("/") ? FileHomeUrl : $"{FileHomeUrl}/";
+			stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{fileUrl}{now.Year}/{now.Month}/img-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
 			stringBuilder.Append("<!-- /wp:image -->");
 			imgIndex++;
 			return imgIndex;
