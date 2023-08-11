@@ -169,8 +169,10 @@ namespace dcinsideLibrary.Model
 
 
 			// Create WXR image block
+			var now = DateTime.Now;
 			stringBuilder.Append($"<!-- wp:image {{\"id\":{imgIndex},\"sizeSlug\":\"full\",\"linkDestination\":\"none\"}} -->");
-			stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{BlogHome}wp-content/uploads/2023/08/03-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
+			// https://{BLOGNAME}.files.wordpress.com/2023/08/img-1-1.png
+			stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{BlogHome}/files/{now.Year}/{now.Month}/img-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
 			stringBuilder.Append("<!-- /wp:image -->");
 			imgIndex++;
 			return imgIndex;
