@@ -130,52 +130,58 @@ namespace dcinsideLibrary.Model
 			var imageBytes = Convert.FromBase64String(base64data);
 			bitmap = SKBitmap.Decode(imageBytes);
 			image = SKImage.FromBitmap(bitmap);
-			var imageFilenameStem = $"{PostId}-{imgIndex}";
+			var imageFilenameStem = $"img-{PostId}-{imgIndex}";
 			var imageFilePath = Path.Combine(ImageDirPath, imageFilenameStem);
+			string ext;
 			switch (dataType)
 			{
 				case "data:image/png":
 					{
+						ext = "png";
 						using SKData data = image.Encode(SKEncodedImageFormat.Png, 100);
-						File.WriteAllBytes($"{imageFilePath}.png", data.ToArray());
+						File.WriteAllBytes($"{imageFilePath}.{ext}", data.ToArray());
 					}
 					break;
 				case "data:image/jpeg":
 					{
+						ext = "jpg";
 						using SKData data = image.Encode(SKEncodedImageFormat.Jpeg, 100);
-						File.WriteAllBytes($"{imageFilePath}.jpg", data.ToArray());
+						File.WriteAllBytes($"{imageFilePath}.{ext}", data.ToArray());
 					}
 					break;
 				case "data:image/gif":
 					{
+						ext = "gif";
 						using SKData data = image.Encode(SKEncodedImageFormat.Gif, 100);
-						File.WriteAllBytes($"{imageFilePath}.gif", data.ToArray());
+						File.WriteAllBytes($"{imageFilePath}.{ext}", data.ToArray());
 					}
 					break;
 				case "data:image/bmp":
 					{
+						ext = "bmp";
 						using SKData data = image.Encode(SKEncodedImageFormat.Bmp, 100);
-						File.WriteAllBytes($"{imageFilePath}.bmp", data.ToArray());
+						File.WriteAllBytes($"{imageFilePath}.{ext}", data.ToArray());
 					}
 					break;
 				case "data:image/webp":
 					{
+						ext = "webp";
 						using SKData data = image.Encode(SKEncodedImageFormat.Webp, 100);
-						File.WriteAllBytes($"{imageFilePath}.webp", data.ToArray());
+						File.WriteAllBytes($"{imageFilePath}.{ext}", data.ToArray());
 					}
 					break;
 				default:
 					Console.WriteLine($"Unsupported image type: {dataType}");
+					ext = "png";
 					break;
 			}
-
 
 			// Create WXR image block
 			var now = DateTime.Now;
 			stringBuilder.Append($"<!-- wp:image {{\"id\":{imgIndex},\"sizeSlug\":\"full\",\"linkDestination\":\"none\"}} -->");
 			// https://{FileHomeUrl}/2023/08/img-1-1.png
 			var fileUrl = FileHomeUrl.Last().Equals("/") ? FileHomeUrl : $"{FileHomeUrl}/";
-			stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{fileUrl}{now.Year}/{now.Month}/img-{PostId}-{imgIndex}.png\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
+			stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{fileUrl}{now.Year}/{now.Month.ToString("d2")}/img-{PostId}-{imgIndex}.{ext}\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
 			stringBuilder.Append("<!-- /wp:image -->");
 			imgIndex++;
 			return imgIndex;
