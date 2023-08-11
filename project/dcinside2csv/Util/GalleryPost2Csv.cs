@@ -23,7 +23,7 @@ namespace dcinside2csv.Util
 
 		public bool Save(string filename)
 		{
-			using var writer = new StreamWriter($"{filename}.csv", false, Encoding.UTF8);
+			using var writer = new StreamWriter(filename, false, Encoding.UTF8);
 			using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
 			csv.WriteRecords(csvPosts);
 			return true;
@@ -40,7 +40,7 @@ namespace dcinside2csv.Util
 
 			try
 			{
-				File.WriteAllText($"{filename}.csv", stringBuilder.ToString());
+				File.WriteAllText(filename, stringBuilder.ToString());
 				return true;
 			}
 			catch (Exception e)

@@ -110,7 +110,7 @@ public class MyCommands : ConsoleAppBase
 			};
 			galleryPost2Csv.Add(csvPost);
 		}
-		galleryPost2Csv.Save(Path.Combine(outputDirPath, "result"));
+		galleryPost2Csv.Save(inputCsvPath);
 	}
 
 	private string toWpDate(string date)
