@@ -49,6 +49,13 @@ namespace dcinsideLibrary.Model
 					if (rawContent.Children.Length == 1)
 					{
 						var childNode = rawContent.Children[0];
+						// Skip DC Link block
+						if (rawContent.ClassList.Contains("og-div"))
+						{
+							continue;
+							//WrapParagraph(stringBuilder, rawContent);
+						}
+
 						// Skip <br> tag
 						if (childNode.TagName.Equals("BR"))
 						{
@@ -75,11 +82,6 @@ namespace dcinsideLibrary.Model
 								L.Log($"Skipping image in post: {Subject}");
 							}
 							imgIndex++;
-						}
-
-						if (rawContent.ClassList.Contains("og-div"))
-						{
-							WrapParagraph(stringBuilder, rawContent);
 						}
 					}
 					else
