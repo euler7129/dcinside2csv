@@ -61,9 +61,16 @@ namespace dcinsideLibrary.Model
 							// Save image from base64 data
 							var imgNode = childNode.Children[0];
 
-							SKBitmap bitmap;
-							SKImage image;
-							imgIndex = ProcessImageBlock(stringBuilder, imgIndex, imgNode, out bitmap, out image);
+							try
+							{
+								ProcessImageBlock(stringBuilder, imgIndex, imgNode);
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine(ex.Message);
+								Console.WriteLine("Skipping this image");
+							}
+							imgIndex++;
 						}
 					}
 					else
@@ -73,9 +80,16 @@ namespace dcinsideLibrary.Model
 						 // Save image from base64 data
 							var imgNode = rawContent.Children[0];
 
-							SKBitmap bitmap;
-							SKImage image;
-							imgIndex = ProcessImageBlock(stringBuilder, imgIndex, imgNode, out bitmap, out image);
+							try
+							{
+								ProcessImageBlock(stringBuilder, imgIndex, imgNode);
+							}
+							catch (Exception ex)
+							{
+								Console.WriteLine(ex.Message);
+								Console.WriteLine("Skipping this image");
+							}
+							imgIndex++;
 						}
 						else
 						{// paragraph block
@@ -119,7 +133,7 @@ namespace dcinsideLibrary.Model
 			}
 		}
 
-		private int ProcessImageBlock(StringBuilder stringBuilder, int imgIndex, IElement imgNode, out SKBitmap bitmap, out SKImage image)
+		private void ProcessImageBlock(StringBuilder stringBuilder, int imgIndex, IElement imgNode)
 		{
 			var dataSource = imgNode.GetAttribute("src");
 			string patern = @"(data:image\/.*);base64,(.*)";
@@ -128,7 +142,10 @@ namespace dcinsideLibrary.Model
 			var base64data = match.Groups[2].Value;
 			// Decode base64data and save into file
 			var imageBytes = Convert.FromBase64String(base64data);
+			SKBitmap bitmap;
+			SKImage image;
 			bitmap = SKBitmap.Decode(imageBytes);
+
 			image = SKImage.FromBitmap(bitmap);
 			var imageFilenameStem = $"img-{PostId}-{imgIndex}";
 			var imageFilePath = Path.Combine(ImageDirPath, imageFilenameStem);
@@ -183,8 +200,6 @@ namespace dcinsideLibrary.Model
 			var fileUrl = FileHomeUrl.Last().Equals("/") ? FileHomeUrl : $"{FileHomeUrl}/";
 			stringBuilder.Append($"<figure class=\"wp-block-image size-full\"><img src=\"{fileUrl}{now.Year}/{now.Month.ToString("d2")}/img-{PostId}-{imgIndex}.{ext}\" alt=\"\" class=\"wp-image-{imgIndex}\" /></figure>");
 			stringBuilder.Append("<!-- /wp:image -->");
-			imgIndex++;
-			return imgIndex;
 		}
 
 		private string minify(string v)
