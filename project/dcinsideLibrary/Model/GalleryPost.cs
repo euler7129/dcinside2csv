@@ -54,6 +54,10 @@ namespace dcinsideLibrary.Model
 						{
 							continue;
 						}
+						else if (childNode.TagName.Equals("A"))
+						{
+							WrapParagraph(stringBuilder, rawContent);
+						}
 
 						// if childNode class has "imgwrap"...
 						if (childNode.ClassList.Contains("imgwrap"))
@@ -71,6 +75,11 @@ namespace dcinsideLibrary.Model
 								L.Log($"Skipping image in post: {Subject}");
 							}
 							imgIndex++;
+						}
+
+						if (rawContent.ClassList.Contains("og-div"))
+						{
+							WrapParagraph(stringBuilder, rawContent);
 						}
 					}
 					else
@@ -105,24 +114,7 @@ namespace dcinsideLibrary.Model
 									continue;
 							}
 
-							stringBuilder.Append("<!-- wp:paragraph -->");
-							// If element type is div, change it to p
-							if (rawContent.TagName == "DIV")
-							{
-								var pElement = rawContent.Owner!.CreateElement<IHtmlParagraphElement>();
-								foreach (var attribute in rawContent.Attributes)
-								{
-									pElement.SetAttribute(attribute.Name, attribute.Value);
-								}
-								pElement.InnerHtml = rawContent.InnerHtml;
-								//rawContent.Parent!.ReplaceChild(pElement, rawContent); // I think I don't have to replace it
-								stringBuilder.Append(pElement.OuterHtml);
-							}
-							else
-							{
-								stringBuilder.Append(rawContent.OuterHtml);
-							}
-							stringBuilder.Append("<!-- /wp:paragraph -->");
+							WrapParagraph(stringBuilder, rawContent);
 						}
 					}
 				}
@@ -131,6 +123,28 @@ namespace dcinsideLibrary.Model
 				//stringBuilder.Replace("\n", "\"\n\"");
 				return minify(stringBuilder.ToString());
 			}
+		}
+
+		private static void WrapParagraph(StringBuilder stringBuilder, IHtmlElement rawContent)
+		{
+			stringBuilder.Append("<!-- wp:paragraph -->");
+			// If element type is div, change it to p
+			if (rawContent.TagName == "DIV")
+			{
+				var pElement = rawContent.Owner!.CreateElement<IHtmlParagraphElement>();
+				foreach (var attribute in rawContent.Attributes)
+				{
+					pElement.SetAttribute(attribute.Name, attribute.Value);
+				}
+				pElement.InnerHtml = rawContent.InnerHtml;
+				//rawContent.Parent!.ReplaceChild(pElement, rawContent); // I think I don't have to replace it
+				stringBuilder.Append(pElement.OuterHtml);
+			}
+			else
+			{
+				stringBuilder.Append(rawContent.OuterHtml);
+			}
+			stringBuilder.Append("<!-- /wp:paragraph -->");
 		}
 
 		private void ProcessImageBlock(StringBuilder stringBuilder, int imgIndex, IElement imgNode)
