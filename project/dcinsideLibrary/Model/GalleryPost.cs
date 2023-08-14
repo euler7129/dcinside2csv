@@ -61,10 +61,6 @@ namespace dcinsideLibrary.Model
 						{
 							continue;
 						}
-						else if (childNode.TagName.Equals("A"))
-						{
-							WrapParagraph(stringBuilder, rawContent);
-						}
 
 						// if childNode class has "imgwrap"...
 						if (childNode.ClassList.Contains("imgwrap"))
@@ -82,6 +78,19 @@ namespace dcinsideLibrary.Model
 								L.Log($"Skipping image in post: {Subject}");
 							}
 							imgIndex++;
+						}
+
+						if (childNode.TagName.Equals("A"))
+						{
+							WrapParagraph(stringBuilder, rawContent);
+						}
+						else if (childNode.TagName.Equals("SPAN"))
+						{
+							if (childNode.InnerHtml == "")
+							{
+								continue;
+							}
+							WrapParagraph(stringBuilder, rawContent);
 						}
 					}
 					else
