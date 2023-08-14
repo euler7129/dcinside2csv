@@ -3,7 +3,8 @@
 	public class Logger
 	{
 		private static Logger instance;
-		private static readonly string filename = "logs.log";
+		private static readonly DateTime now = DateTime.Now;
+		private static readonly string filename = $"logs-{now.ToString("yy-MM-dd-HH-mm-ss")}.log";
 		private Logger() { }
 
 		public static Logger Instance
