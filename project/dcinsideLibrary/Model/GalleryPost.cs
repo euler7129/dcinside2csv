@@ -5,13 +5,13 @@ using SkiaSharp;
 using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 using WebMarkupMin.Core;
 
 namespace dcinsideLibrary.Model
 {
 	public class GalleryPost
 	{
+		private static readonly Logger L = Logger.Instance;
 		private GalleryPost() { }
 		public GalleryPost(string blogHomeUrl, string fileHomeUrl, int postId, string imageDirPath)
 		{
@@ -67,8 +67,8 @@ namespace dcinsideLibrary.Model
 							}
 							catch (Exception ex)
 							{
-								Console.WriteLine(ex.Message);
-								Console.WriteLine("Skipping this image");
+								L.Log(ex.Message);
+								L.Log($"Skipping image in post: {Subject}");
 							}
 							imgIndex++;
 						}
@@ -86,8 +86,8 @@ namespace dcinsideLibrary.Model
 							}
 							catch (Exception ex)
 							{
-								Console.WriteLine(ex.Message);
-								Console.WriteLine("Skipping this image");
+								L.Log(ex.Message);
+								L.Log("Skipping this image");
 							}
 							imgIndex++;
 						}
@@ -188,7 +188,7 @@ namespace dcinsideLibrary.Model
 					}
 					break;
 				default:
-					Console.WriteLine($"Unsupported image type: {dataType}");
+					L.Log($"Unsupported image type: {dataType}");
 					ext = "png";
 					break;
 			}
