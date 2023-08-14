@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 using AngleSharp.XPath;
+using dcinsideLibrary;
 using dcinsideLibrary.Model;
 using dcinsideLibrary.Util;
 using System.Globalization;
@@ -49,7 +50,18 @@ public class MyCommands : ConsoleAppBase
 			var category = document.QuerySelector(".title_headtext").TextContent;
 			var subject = document.QuerySelector(".title_subject").TextContent;
 			var date = document.QuerySelector("span.gall_date").GetAttribute("title");
-			var postId = getPostId(document, date);
+			int postId;
+			try
+			{
+				postId = getPostId(document, date);
+			}
+			catch (Exception ex)
+			{
+				Logger.Instance.Log($"Error: {ex.Message}");
+				Logger.Instance.Log($"Skipping {subject}");
+				continue;
+			}
+			
 			var author = document.Body.SelectSingleNode("//*[@id=\"container\"]/section/article[2]/div[1]/header/div/div/div[1]/span[1]/a/em").TextContent;
 			// Get write_div div element
 			var writeDiv = document.QuerySelector("div.write_div");
